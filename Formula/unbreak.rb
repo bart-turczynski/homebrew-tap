@@ -5,21 +5,39 @@
 #
 #   brew install bart-turczynski/tap/unbreak
 #
-# Builds from source (needs the Swift toolchain from the Xcode Command Line
-# Tools); pre-built bottles are a later optimization (§12). On each tagged
-# release, bump `version`, `url`, and `sha256` together (see docs/RELEASING.md) so
-# users only update on an explicit bump.
+# Installs come from a prebuilt **bottle** (see the `bottle do` block) so users
+# need no Swift toolchain. The `install` recipe below still builds from source —
+# it is both how the release workflow *produces* the bottle and the automatic
+# fallback for any platform without a matching bottle (then the Xcode Command
+# Line Tools are required). On each tagged release, bump `version`, `url`, and
+# `sha256` (source tarball) together, then paste the workflow-generated bottle
+# block — see docs/RELEASING.md.
 class Unbreak < Formula
   desc "Repair terminal-wrapped clipboard commands from TUI coding agents"
   homepage "https://github.com/bart-turczynski/unbreak"
   # Source tarball for the tagged release. `version` is explicit so users update
   # only on a bump, not on every tap refresh.
-  url "https://github.com/bart-turczynski/unbreak/archive/refs/tags/v0.1.1.tar.gz"
-  version "0.1.1"
-  # Digest of the v0.1.1 source tarball (see docs/RELEASING.md):
-  #   curl -fsSL .../v0.1.1.tar.gz | shasum -a 256
-  sha256 "804ea9784686e86cac068bea8b51e2193311c2a3f91bd972ae93a13156374782"
+  url "https://github.com/bart-turczynski/unbreak/archive/refs/tags/v0.1.2.tar.gz"
+  version "0.1.2"
+  # Digest of the v0.1.2 source tarball (see docs/RELEASING.md):
+  #   curl -fsSL .../v0.1.2.tar.gz | shasum -a 256
+  # This is the tap copy, so it carries the real digest (the source-repo copy ships
+  # a placeholder, since a formula can't self-consistently hash the tarball it lives
+  # in). The source path is the no-bottle fallback (Intel / --build-from-source).
+  sha256 "7cdae5da38932fe3d721dab1f9ca24073398db21e7fea55d2f29b04ca71acb16"
   license "MIT"
+
+  # Prebuilt binary, hosted as a GitHub release asset (see .github/workflows/
+  # release.yml). The job builds on the macos-26 runner but relabels the bottle to
+  # the OLDEST supported macOS (arm64_ventura = Package.swift .macOS(.v13)) so
+  # newer systems reuse it — one file serves macOS 13+ on Apple Silicon. Paste the
+  # job-generated block here and in the tap. `:any_skip_relocation` is correct:
+  # the binary hardcodes no Cellar path (links only system libs + the OS Swift
+  # runtime).
+  bottle do
+    root_url "https://github.com/bart-turczynski/unbreak/releases/download/v0.1.2"
+    sha256 cellar: :any_skip_relocation, arm64_ventura: "ab18f2de3b8bd7a98f691286c6f7c51e03d29d5bf559ae21514db07f222fce86"
+  end
 
   depends_on :macos
 
