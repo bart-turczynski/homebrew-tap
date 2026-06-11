@@ -17,15 +17,15 @@ class Unbreak < Formula
   homepage "https://github.com/bart-turczynski/unbreak"
   # Source tarball for the tagged release. `version` is explicit so users update
   # only on a bump, not on every tap refresh.
-  url "https://github.com/bart-turczynski/unbreak/archive/refs/tags/v0.5.0.tar.gz"
-  version "0.5.0"
+  url "https://github.com/bart-turczynski/unbreak/archive/refs/tags/v0.5.1.tar.gz"
+  version "0.5.1"
   # Digest of the v0.2.0 source tarball (see docs/RELEASING.md):
   #   curl -fsSL .../v0.2.0.tar.gz | shasum -a 256
   # NOTE: in *this* repo the formula ships inside the tarball it points at, so a
   # self-consistent source sha is impossible — the tap repo's copy carries the
   # real digest, and release.yml injects it for the bottle build. This value is a
   # placeholder until mirrored to the tap.
-  sha256 "6f8b864dd74eb5279ad48a9ec2350ca8ef877e5010ab5058508b1cf75aa8fb01"
+  sha256 "7ae907318148a4bf00c1a8cfe0653d492d9ab4a8f0540514b8568a2c534010d0"
   license "MIT"
 
   # Prebuilt binary, hosted as a GitHub release asset (see .github/workflows/
@@ -36,12 +36,12 @@ class Unbreak < Formula
   # the binary hardcodes no Cellar path (links only system libs + the OS Swift
   # runtime).
   bottle do
-    root_url "https://github.com/bart-turczynski/unbreak/releases/download/v0.5.0"
-    # Real v0.5.0 bottle digest, produced by release.yml. On the NEXT bump keep a
+    root_url "https://github.com/bart-turczynski/unbreak/releases/download/v0.5.1"
+    # Real v0.5.1 bottle digest, produced by release.yml. On the NEXT bump keep a
     # valid 64-hex value here even before rebuilding: the workflow's `brew install
     # --build-bottle` parses this block (the v0.3.0 lesson — a bad placeholder
     # failed the first tagged build).
-    sha256 cellar: :any_skip_relocation, arm64_ventura: "dd36ac306ede358c2c52de7d7269e20b03868d5d6cc9145166fb0f3bae201989"
+    sha256 cellar: :any_skip_relocation, arm64_ventura: "82e3fcce0c02e846eeb87d7502a562f7a541074e894db76974841d3dd7e1c756"
   end
 
   depends_on :macos
