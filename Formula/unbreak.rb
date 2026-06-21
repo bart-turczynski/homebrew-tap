@@ -1,12 +1,9 @@
 # Homebrew formula for unbreak (PRD v2 §9).
 #
-# This is the TAP copy (bart-turczynski/homebrew-tap), the one users install from:
+# Lives in the tap repo `bart-turczynski/homebrew-tap` as `Formula/unbreak.rb`, so
+# users install with:
 #
 #   brew install bart-turczynski/tap/unbreak
-#
-# It mirrors Formula/unbreak.rb in the unbreak repo on every release. The only
-# difference: the source `sha256` below is the REAL digest of the tagged tarball
-# (the in-repo copy can't be self-consistent, since it ships inside that tarball).
 #
 # Installs come from a prebuilt **bottle** (see the `bottle do` block) so users
 # need no Swift toolchain. The `install` recipe below still builds from source —
@@ -20,11 +17,15 @@ class Unbreak < Formula
   homepage "https://github.com/bart-turczynski/unbreak"
   # Source tarball for the tagged release. `version` is explicit so users update
   # only on a bump, not on every tap refresh.
-  url "https://github.com/bart-turczynski/unbreak/archive/refs/tags/v0.6.0.tar.gz"
-  version "0.6.0"
-  # Real digest of the v0.6.0 source tarball:
-  #   curl -fsSL .../v0.6.0.tar.gz | shasum -a 256
-  sha256 "0515519e29eb46d6108c40929c0bdd2b36219cba644cac9caaacb6e3cbea8629"
+  url "https://github.com/bart-turczynski/unbreak/archive/refs/tags/v0.7.0.tar.gz"
+  version "0.7.0"
+  # Digest of the v0.2.0 source tarball (see docs/RELEASING.md):
+  #   curl -fsSL .../v0.2.0.tar.gz | shasum -a 256
+  # NOTE: in *this* repo the formula ships inside the tarball it points at, so a
+  # self-consistent source sha is impossible — the tap repo's copy carries the
+  # real digest, and release.yml injects it for the bottle build. This value is a
+  # placeholder until mirrored to the tap.
+  sha256 "2744254f3f8bc78b060695d48363915bcf15af9bd4c2ba05f1b3967b598ab77e"
   license "MIT"
 
   # Prebuilt binary, hosted as a GitHub release asset (see .github/workflows/
@@ -34,13 +35,18 @@ class Unbreak < Formula
   # bottle on a newer OS within the same arch (never older, never across archs).
   # `arm64_ventura` serves Apple Silicon macOS 13+, `ventura` serves Intel 13+.
   # The two release assets are byte-identical copies of the one universal tarball,
-  # so they share a sha256.
+  # so they share a sha256. Paste the job-generated block here and in the tap.
   # `:any_skip_relocation` is correct: the binary hardcodes no Cellar path (links
   # only system libs + the OS Swift runtime).
   bottle do
-    root_url "https://github.com/bart-turczynski/unbreak/releases/download/v0.6.0"
-    sha256 cellar: :any_skip_relocation, arm64_ventura: "316a228b483dae023fd13b757e670fa9e7f50aa733ac38c2ed787526d7ae978c"
-    sha256 cellar: :any_skip_relocation, ventura:       "316a228b483dae023fd13b757e670fa9e7f50aa733ac38c2ed787526d7ae978c"
+    root_url "https://github.com/bart-turczynski/unbreak/releases/download/v0.7.0"
+    # Real v0.6.0 bottle digest, produced by release.yml. On the NEXT bump keep
+    # valid 64-hex values here even before rebuilding: the workflow's `brew install
+    # --build-bottle` parses this block (the v0.3.0 lesson — a bad placeholder
+    # failed the first tagged build). Both lines share one digest (identical
+    # universal tarball under two arch tags).
+    sha256 cellar: :any_skip_relocation, arm64_ventura: "3ca8c74778f14cfc5096e61c3fa36b3126ba631ff9d6da7f5b8a7ed7228f26ad"
+    sha256 cellar: :any_skip_relocation, ventura:       "3ca8c74778f14cfc5096e61c3fa36b3126ba631ff9d6da7f5b8a7ed7228f26ad"
   end
 
   depends_on :macos
@@ -59,25 +65,17 @@ class Unbreak < Formula
     bin.install ".build/apple/Products/Release/unbreak"
   end
 
-  # `brew services start unbreak` generates the per-user launchd plist — no
-  # hardcoded path or username (§9). The watcher only mutates the clipboard when
-  # every §7 gate passes.
-  service do
-    run [opt_bin/"unbreak", "--watch"]
-    run_type :immediate
-    keep_alive true
-    log_path var/"log/unbreak.watch.log"
-    error_log_path var/"log/unbreak.watch.log"
-  end
-
+  # No `service do` block on purpose (§9). The watcher is enabled solely through
+  # `unbreak setup` / `unbreak install-agent`, which install the per-user
+  # `io.unbreak.watch` LaunchAgent. A parallel `brew services` watcher
+  # (`homebrew.mxcl.unbreak`) would be a *second* daemon the tool can't see, and two
+  # watchers double-process every copy and corrupt it. One canonical mechanism keeps
+  # enablement single-source-of-truth; the §7.4 single-instance lock is the backstop.
   def caveats
     <<~EOS
       The clipboard watcher is OFF until you opt in — `brew install` only puts the
-      CLI on your PATH. Turn it on with either:
-
-        brew services start unbreak     # run the watcher at login (launchd)
-
-      or the guided setup, which detects your terminals and writes a config first:
+      CLI on your PATH. Turn it on with the guided setup, which detects your
+      terminals, writes a config, and installs the login watcher:
 
         unbreak setup
 
