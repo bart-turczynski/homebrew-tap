@@ -17,15 +17,15 @@ class Unbreak < Formula
   homepage "https://github.com/bart-turczynski/unbreak"
   # Source tarball for the tagged release. `version` is explicit so users update
   # only on a bump, not on every tap refresh.
-  url "https://github.com/bart-turczynski/unbreak/archive/refs/tags/v0.7.1.tar.gz"
-  version "0.7.1"
+  url "https://github.com/bart-turczynski/unbreak/archive/refs/tags/v0.7.2.tar.gz"
+  version "0.7.2"
   # Digest of the v0.2.0 source tarball (see docs/RELEASING.md):
   #   curl -fsSL .../v0.2.0.tar.gz | shasum -a 256
   # NOTE: in *this* repo the formula ships inside the tarball it points at, so a
   # self-consistent source sha is impossible — the tap repo's copy carries the
   # real digest, and release.yml injects it for the bottle build. This value is a
   # placeholder until mirrored to the tap.
-  sha256 "fef9d77ccb39f3e64772d263d8200d7d5c395f228ef1d110a7450b3083a12571"
+  sha256 "83ba9ca910f28a0c4ac1bb5c9e97cdd30eb60e10ccb26577eec483214d40769f"
   license "MIT"
 
   # Prebuilt binary, hosted as a GitHub release asset (see .github/workflows/
@@ -39,14 +39,14 @@ class Unbreak < Formula
   # `:any_skip_relocation` is correct: the binary hardcodes no Cellar path (links
   # only system libs + the OS Swift runtime).
   bottle do
-    root_url "https://github.com/bart-turczynski/unbreak/releases/download/v0.7.1"
+    root_url "https://github.com/bart-turczynski/unbreak/releases/download/v0.7.2"
     # Real v0.7.0 bottle digest, produced by release.yml. On the NEXT bump keep
     # valid 64-hex values here even before rebuilding: the workflow's `brew install
     # --build-bottle` parses this block (the v0.3.0 lesson — a bad placeholder
     # failed the first tagged build). Both lines share one digest (identical
     # universal tarball under two arch tags).
-    sha256 cellar: :any_skip_relocation, arm64_ventura: "142c37956107f936867358a958ac0cb13fa6222ae96673660276bdd5a91a3834"
-    sha256 cellar: :any_skip_relocation, ventura:       "142c37956107f936867358a958ac0cb13fa6222ae96673660276bdd5a91a3834"
+    sha256 cellar: :any_skip_relocation, arm64_ventura: "b8b28550eaed6f5d19e1a03dedd2b72f2acd2ee81acc757b4cb0e98fce905f3a"
+    sha256 cellar: :any_skip_relocation, ventura:       "b8b28550eaed6f5d19e1a03dedd2b72f2acd2ee81acc757b4cb0e98fce905f3a"
   end
 
   depends_on :macos
